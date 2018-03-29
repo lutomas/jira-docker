@@ -1,0 +1,26 @@
+data:
+  image: tianon/true
+  volumes:
+    - /var/lib/postgresql/jira
+    - /usr/local/jira/_jira_home
+db:
+  image: postgres
+  environment:
+    POSTGRES_USER: jira
+    POSTGRES_PASSWORD: jiradbpassword
+    PGDATA: /var/lib/postgresql/jira
+  volumes_from:
+    - data
+  ports:
+    - 0.0.0.0:5432:5432
+jira:
+  build: jira-server
+  hostname: dev.example.com
+  environment:
+    - JIRA_HOME="/usr/local/jira/_jira_home"
+  # links:
+  #   - db:postgres
+  volumes_from:
+    - data
+  ports:
+    - 0.0.0.0:8888:8080
