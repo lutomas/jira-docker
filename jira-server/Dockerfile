@@ -1,7 +1,10 @@
-# AlpineLinux with a glibc-2.27-r0 and Oracle Java 8
+# jira-software-7.8.1 on AlpineLinux with a glibc-2.27-r0 and Oracle Java 8
 FROM alpine:3.7
 
-MAINTAINER Anastas Dancha <anapsix@random.io>
+
+MAINTAINER Tomas Lukosius (lutomas@gmail.com)
+# Creator of alpine-oracle JDK 8.
+# MAINTAINER Anastas Dancha <anapsix@random.io>
 # thanks to Vladimir Krivosheev <develar@gmail.com> aka @develar for smaller image
 # and Victor Palma <palma.victor@gmail.com> aka @devx for pointing it out
 
@@ -16,6 +19,9 @@ ENV JAVA_VERSION_MAJOR=8 \
     GLIBC_REPO=https://github.com/sgerrand/alpine-pkg-glibc \
     GLIBC_VERSION=2.27-r0 \
     LANG=C.UTF-8
+
+# COPY ./atlassian-jira-software-7.8.1.tar.gz /tmp
+ADD https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.8.1.tar.gz /tmp
 
 # do all in one step
 RUN set -ex && \
@@ -45,6 +51,9 @@ RUN set -ex && \
     fi && \
     sed -i s/#networkaddress.cache.ttl=-1/networkaddress.cache.ttl=10/ $JAVA_HOME/jre/lib/security/java.security && \
     apk del curl glibc-i18n && \
+    mkdir -p /usr/local/jira && \
+    tar -zxf /tmp/atlassian-jira-software-7.8.1.tar.gz -C /usr/local/jira/ && \
+    mv /usr/local/jira/atlassian-jira-software-7.8.1-standalone/ /usr/local/jira/server/ && \
     rm -rf /opt/jdk/*src.zip \
            /opt/jdk/lib/missioncontrol \
            /opt/jdk/lib/visualvm \
@@ -79,19 +88,15 @@ RUN set -ex && \
            /tmp/* /var/cache/apk/* && \
     echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 
-COPY ./atlassian-jira-software-7.8.1.tar.gz /tmp
 
-# # Install dependencies
-RUN set -ex && \
-  mkdir -p /usr/local/jira && \
-  tar -zxf /tmp/atlassian-jira-software-7.8.1.tar.gz -C /usr/local/jira/ && \
-  mv /usr/local/jira/atlassian-jira-software-7.8.1-standalone/ /usr/local/jira/server/ && \
-  # ls -l /usr/local/jira/server && \
-  rm /tmp/atlassian-jira-software-7.8.1.tar.gz && \
-  ls -l /usr/local/jira/ && \
-  ls -l /tmp
+COPY ./dbconfig.xml /usr/local/jira
+COPY ./start.sh /usr/local/jira
+
+RUN chmod +x /usr/local/jira/start.sh \
+  && ls -l /usr/local/jira
 
 VOLUME /usr/local/jira/_jira_home
 
 EXPOSE 8080
-CMD ["/usr/local/jira/server/bin/start-jira.sh", "-fg"]
+# CMD ["/usr/local/jira/server/bin/start-jira.sh", "-fg"]
+CMD ["/usr/local/jira/start.sh"]

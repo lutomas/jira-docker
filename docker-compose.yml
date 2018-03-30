@@ -11,15 +11,15 @@ db:
     PGDATA: /var/lib/postgresql/jira
   volumes_from:
     - data
-  ports:
-    - 0.0.0.0:5432:5432
+  # ports:
+  #   - 0.0.0.0:5432:5432
 jira:
   build: jira-server
   hostname: dev.example.com
   environment:
     - JIRA_HOME="/usr/local/jira/_jira_home"
-  # links:
-  #   - db:postgres
+  links:
+    - db:postgres
   volumes_from:
     - data
   ports:
