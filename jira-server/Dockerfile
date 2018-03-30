@@ -92,8 +92,7 @@ RUN set -ex && \
 COPY ./dbconfig.xml /usr/local/jira
 COPY ./start.sh /usr/local/jira
 
-RUN chmod +x /usr/local/jira/start.sh \
-  && ls -l /usr/local/jira
+RUN chmod +x /usr/local/jira/start.sh
 
 VOLUME /usr/local/jira/_jira_home
 
