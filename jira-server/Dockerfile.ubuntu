@@ -3,25 +3,31 @@ FROM ubuntu:latest
 MAINTAINER Tomas Lukosius <lutomas@gmail.com>
 
 # Install dependencies
-RUN set -ex \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  apt-get update && \
-  apt-get install -y software-properties-common && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install -y oracle-java8-installer && \
+RUN set -ex && \
   rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-jdk8-installer && \
-  mkdir -p /usr/local/jira
+  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+  apt-get update -y && \
+  apt-get install -y --no-install-recommends software-properties-common && \
+  rm -rf /var/lib/apt/lists/* && \
+  add-apt-repository -y ppa:webupd8team/java && \
+  apt-get update -y && \
+  apt-get install -y --no-install-recommends oracle-java8-installer && \  
+  apt-get remove -yq software-properties-common && \
+  apt-get autoremove -yq && \
+  apt-get clean -yq && \
+  rm -rf /var/lib/apt/lists/* && \
+  rm -rf /var/cache/oracle-jdk8-installer 
+
 
 # Define commonly used JAVA_HOME variable
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
 # JIRA-server from local path
 # COPY ./atlassian-jira-software-7.8.1.tar.gz /tmp
+# JIRA-server from WEB.
+# ADD https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.8.1.tar.gz /tmp
 
-# Download JIRA-server.
-ADD https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.8.1.tar.gz /tmp
+RUN mkdir -p /usr/local/jira 
 
 # Add JIRA config.
 COPY ./dbconfig.xml /usr/local/jira
@@ -29,8 +35,9 @@ COPY ./dbconfig.xml /usr/local/jira
 # Add JIRA start script.
 COPY ./start.sh /usr/local/jira
 
-RUN set -ex \  
-  tar -zxf /tmp/atlassian-jira-software-7.8.1.tar.gz -C /usr/local/jira/ && \
+RUN set -ex && \  
+  wget -O /tmp/atlassian-jira-software-7.8.1.tar.gz https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.8.1.tar.gz && \
+  tar -zxf /tmp/atlassian-jira-software-7.8.1.tar.gz -C /usr/local/jira && \
   mv /usr/local/jira/atlassian-jira-software-7.8.1-standalone/ /usr/local/jira/server/ && \
   rm /tmp/atlassian-jira-software-7.8.1.tar.gz && \
   chmod +x /usr/local/jira/start.sh  
