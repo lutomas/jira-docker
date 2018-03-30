@@ -21,7 +21,7 @@ ENV JAVA_VERSION_MAJOR=8 \
     LANG=C.UTF-8
 
 # COPY ./atlassian-jira-software-7.8.1.tar.gz /tmp
-ADD https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.8.1.tar.gz /tmp
+# ADD https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.8.1.tar.gz /tmp
 
 # do all in one step
 RUN set -ex && \
@@ -50,6 +50,7 @@ RUN set -ex && \
       cp -v /tmp/UnlimitedJCEPolicyJDK8/*.jar /opt/jdk/jre/lib/security; \
     fi && \
     sed -i s/#networkaddress.cache.ttl=-1/networkaddress.cache.ttl=10/ $JAVA_HOME/jre/lib/security/java.security && \
+    curl -sSL https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-7.8.1.tar.gz -o /tmp/atlassian-jira-software-7.8.1.tar.gz && \
     apk del curl glibc-i18n && \
     mkdir -p /usr/local/jira && \
     tar -zxf /tmp/atlassian-jira-software-7.8.1.tar.gz -C /usr/local/jira/ && \
